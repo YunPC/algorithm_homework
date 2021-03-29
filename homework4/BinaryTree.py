@@ -86,12 +86,24 @@ class BinaryTree:
                 visited[root] = True
                 if root.left is not None and visited.get(root.left.value) is None: # left
                     queue.append(root.left)
-                    continue
                 if root.right is not None and visited.get(root.right.value) is None: # right
                     queue.append(root.right)
         return False
     
     def dfs(self, value):
+        stack = []
+        if self.root is None:
+            return None
+        else:
+            stack.append(self.root)
+            while stack:
+                root = stack.pop() #node
+                if root.value == value:
+                    return True
+                if root.right is not None: # right
+                    stack.append(root.right)
+                if root.left is not None: # left
+                    stack.append(root.left)
         return False
 
 
