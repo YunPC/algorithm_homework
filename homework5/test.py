@@ -3,7 +3,7 @@ class Node:
         self.value = value
         self.left = left
         self.right = right
-    
+
     def display(self):
         lines, *_ = self._display_aux()
         for line in lines:
@@ -59,7 +59,7 @@ class Node:
 class BinarySearchTree:
     def __init__(self):
         self.root = None
-    
+
     def __search(self, value):
         node = self.root
         parent = None
@@ -79,14 +79,6 @@ class BinarySearchTree:
 
         return parent, node, direction
 
-    def __connect(self, direction, parent, child):
-        if direction == 'left':
-            parent.left = child
-        elif direction == 'right':
-            parent.right = child
-        else:
-            return
-
     def insert(self, value):
         parent, node, direction = self.__search(value)
 
@@ -102,65 +94,58 @@ class BinarySearchTree:
         else:
             parent.right = Node(value)
 
-        return True
-
-    def search(self, value):
-        _, node, _ = self.__search(value)
-        return node
-    
     def remove(self, value):
         parent, node, direction = self.__search(value)
-        
-        if node.left is None and node.right is None: #leaf node
-            self.__connect(direction, parent, None)
-        elif node.left is not None and node.right is not None: #both child node
-            #find new node
-            new_node_parent = node
-            new_node = node.right
-            while new_node.left:
-                new_node_parent = new_node
-                new_node = new_node.left
 
-            #set new connect
-            new_node.left = node.left # left side
-            self.__connect(direction, parent, new_node) # parent-child
+        if node is None:
+            return False
 
-            # Exception case : 대체 노드의 오른쪽에 자식이 남아있는 경우 대체노드의 부모의 왼쪽에 붙여줘야 한다.
-            if new_node_parent != node and new_node.right: 
-                new_node_parent.left = new_node.right
-                new_node.right = node.right
-            # Exception case : 대체 노드가 자식이 없고 지우고자 하는 노드가 대체 노드의 부모일 때
-            elif new_node.right is None and node.right == new_node:
-                new_node.right = None
-            # Exception case : 대체 노드가 자식이 없고 지우고자 하는 노드가 대체 노드의 부모가 아닐 때
-            elif new_node.right is None and node.right != new_node:
-                new_node_parent.left = None
-                new_node.right = node.right 
-            # Exception case : 루트를 지우는 경우 루트값을 새로 갱신해야 한다.
+        if (node.left is None) and (node.right is None):
             if parent is None:
-                self.root = new_node
-        else: # one child node
-            child = node.left if node.left else node.right
-            self.__connect(direction, parent, child)
-                
-                
+                self.root = None
+            elif direction == 'left':
+                parent.left = None
+            else:
+                parent.right = None
 
+        elif node.left is None:
+            if parent is None:
+                self.root = node.right
+            elif direction == 'left':
+                parent.left = node.right
+            else:
+                parent.right = node.right
 
+        elif node.right is None:
+            if parent is None:
+                self.root = node.left
+            elif direction == 'left':
+                parent.left = node.left
+            else:
+                parent.right = node.left
 
-# bst._BinarySearchTree__search(0) 호출 방법(not recommended)
-bst = BinarySearchTree()
+        else:
+            prev = node
+            curr = node.left
 
-import random
-x = list(range(20))
-random.shuffle(x)
-for el in x:
-    bst.insert(el)
-bst.root.display()
+            while curr.right:
+                prev = curr
+                curr = curr.right
 
-print('------------------remove 6----------------------')
-bst.remove(6)
-bst.root.display()
+            if prev != node:
+                prev.right = curr.left
+            else:
+                prev.left = curr.left
 
-print('------------------remove 10----------------------')
-bst.remove(10)
-bst.root.display()
+            curr.left = node.left
+            curr.right = node.right
+            
+            if parent is None:
+                self.root = curr
+            elif direction == 'left':
+                parent.left = curr
+            else:
+                parent.right = curr
+
+        return True
+            
